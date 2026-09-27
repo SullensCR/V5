@@ -46,7 +46,6 @@ class NukerClass extends ModuleBase {
         this.nukeBelow = false;
         this.onGroundOnly = false;
         this.autoChest = false;
-        this.chestScanTypes = null;
         this.usePickaxeAbility = false;
         this.heightLimit = 5;
         this.onGroundDelay = 1;
@@ -132,7 +131,7 @@ class NukerClass extends ModuleBase {
             for (const [posStr, clickedAt] of this.chestClickCooldowns) {
                 if (now - clickedAt >= 2000 && this.solvingChest?.key !== posStr) this.chestClickCooldowns.delete(posStr);
             }
-            if (this.autoChest && this.tickCounter % 4 === 0) this.scanForChests();
+            if (this.autoChest) this.scanForChests();
             if (this.customBlockList.length === 0) {
                 this.message('Try setting targets with /v5 commands:');
                 this.message('- /v5 nuker add - adds block at crosshair');
@@ -287,12 +286,14 @@ class NukerClass extends ModuleBase {
         if (Client.isInGui() && !Client.isInChat()) return;
         const eye = this.cords();
         if (!eye) return;
-        if (!this.chestScanTypes) this.chestScanTypes = ['minecraft:chest', 'minecraft:trapped_chest'].map((name) => new BlockType(name));
         const [x, y, z] = eye.map(Math.floor);
         const now = Date.now();
         let target = null;
         let nearest = Infinity;
-        const blocks = World.getBlocksInBox(x - 6, y - 6, z - 6, x + 6, y + 6, z + 6, this.chestScanTypes);
+        const blocks = World.getBlocksInBox(x - 6, y - 6, z - 6, x + 6, y + 6, z + 6, [
+            new BlockType('minecraft:chest'),
+            new BlockType('minecraft:trapped_chest'),
+        ]);
         for (const block of blocks) {
             const chest = { x: block.x, y: block.y, z: block.z };
             const distance = this.distance(eye, [chest.x, chest.y, chest.z]).distance;
